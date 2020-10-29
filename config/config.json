@@ -1,13 +1,8 @@
 {
     "image_save_dir": "generated_images",
-    "num_generated_images": 100,
-    "num_objects_per_scene": [12, 30],
-    "target_objects": ["white1", "white2", "white3", "white4", "white5",
-                       "white6", "white7", "white8", "white9", "white10",
-                       "white11", "white12", "white13", "white14", "white15",
-                       "white16", "white17", "white18", "white19", "white20",
-                       "white21", "white22", "white23", "white24", "white25",
-                       "white26", "white27", "white28", "white29", "white30"],
+    "num_generated_images": 10,
+    "num_objects_per_scene": [12, 50],
+    "target_objects": ["white12", "white13", "white17", "white19", "white20"],
 
     "pybullet": {
 	"graphical": 0
