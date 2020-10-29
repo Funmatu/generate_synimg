@@ -36,8 +36,8 @@ It'll be error. Load the model in meshlab, then export same file type.
 
 
 ### MEMO
-!git clone https://Funmatu@github.com/Funmatu/generate_synimg.git -b master
-!pip install -r requirements.txt
-!pip install -U imgaug
-%cd generate_synimg/scripts/
-!python generate_datasets.py object bin
+!git clone https://Funmatu@github.com/Funmatu/generate_synimg.git -b master  
+!pip install -r requirements.txt  
+!pip install -U imgaug  
+%cd generate_synimg/scripts/  
+!python generate_datasets.py object bin  
