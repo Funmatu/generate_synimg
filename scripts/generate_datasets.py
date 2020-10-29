@@ -24,8 +24,10 @@ OBJ_MODEL_DIR = os.path.join(ROOT_DIR, "models/obj")
 ENV_MODEL_DIR = os.path.join(ROOT_DIR, "models/env")
 URDF_DIR = os.path.join(ROOT_DIR, "models/urdf")
 
-cls = sys.argv[1]
-env = sys.argv[2]
+args = sys.argv
+cls = args[1]
+env = args[2]
+depth_out = args[3] if len(args)==4 else False
 
 class ObjectState():
     def __init__(self, key, name, mesh, pose, isEnv):
@@ -53,7 +55,7 @@ class GenerateSyntheticDataset():
         else:
             self.physicsClient = pybullet.connect(pybullet.DIRECT)
 
-        self.target_object = cls
+        self.clsname = cls
 
     def __del__(self):
         pybullet.disconnect(self.physicsClient)
@@ -422,7 +424,7 @@ class GenerateSyntheticDataset():
             if (scene_type == "aligned") or (scene_type == "clutter" and modal_pixel_num > amodal_pixel_num * 0.6):
             # if modal_pixel_num > amodal_pixel_num * 0.6:
                 attr = {}
-                attr["region_attributes"] = {"name": self.target_object}
+                attr["region_attributes"] = {"name": self.clsname}
                 ret, thresh = cv2.threshold(img_modal, 127, 255, cv2.THRESH_BINARY)
                 contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 if (len(contours) == 0) : continue
@@ -442,20 +444,20 @@ class GenerateSyntheticDataset():
 
         return regions
 
-    def generate(self, dataset_type, scene_type):
+    def generate(self, dataset_type, scene_type, cnt=0):
         now = datetime.datetime.now()
         dt_folder = str(now.year) + str(now.month).zfill(2) + str(now.day).zfill(2)
         image_save_dir = os.path.join(ROOT_DIR, self.config["image_save_dir"] + "/" + dt_folder)
 
-        for target_object in self.config["target_objects"]:
+        for i, target_object in enumerate(self.config["target_objects"]):
             self.target_object = target_object
             print(" Target Object is '" + self.target_object + "'")
 
-            self.obj_image_save_dir = os.path.join(image_save_dir, dataset_type + "/" + self.target_object + "/" + scene_type)
+            self.obj_image_save_dir = os.path.join(image_save_dir, dataset_type + "/" + self.clsname + "/")
             if not os.path.exists(self.obj_image_save_dir):
                 os.makedirs(self.obj_image_save_dir)
 
-            count = 0
+            count = i * (self.config['num_generated_images']*3) + cnt
             dataset = {}
             for camera_height in [1.4, 1.6, 1.8]:
                 N1 = 4 if dataset_type=='val' else 1 # weight of train vs val = 4 : 1
@@ -503,28 +505,30 @@ class GenerateSyntheticDataset():
                     dataset[filename] = {"filename": filename, "file_attributes":{}, "size":0}
                     
                     # depth unit is [m]
-                    np.save(self.obj_image_save_dir + "/" + str(count).zfill(4) + "_depth", depth)
+                    if depth_out:
+                        np.save(self.obj_image_save_dir + "/" + str(count).zfill(4) + "_depth", depth)
 
                     regions = self.get_segmented_info(scene_type)
                     dataset[filename]["regions"] = regions
                     
                     count += 1
 
-            with open(self.obj_image_save_dir+"/label.json", "w") as f:
+            with open(self.obj_image_save_dir+"/label.json", "a") as f:
                 json.dump(dataset, f)
+        return count
 
 def main():
     with open(CONFIG_FILE, 'r') as f:
         config = json.load(f)
     gsd = GenerateSyntheticDataset(config)
     print("Create aligned train dataset")
-    gsd.generate("train", "aligned")
-    print("Create clutter train dataset")
-    gsd.generate("train", "clutter")
+    cnt = gsd.generate("train", "aligned")
+    # print("Create clutter train dataset")
+    # gsd.generate("train", "clutter", cnt)
     print("create aligned val dataset")
-    gsd.generate("val", "aligned")
-    print("create clutter val dataset")
-    gsd.generate("val", "clutter")
+    cnt = gsd.generate("val", "aligned")
+    # print("create clutter val dataset")
+    # gsd.generate("val", "clutter", cnt)
     
     del gsd
 
