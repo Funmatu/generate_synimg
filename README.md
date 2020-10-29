@@ -37,6 +37,8 @@ It'll be error. Load the model in meshlab, then export same file type.
 
 ### MEMO
 !git clone https://Funmatu@github.com/Funmatu/generate_synimg.git -b master  
+!cp /content/generate_synimg/v-hacd/testVHACD /usr/bin  
+!chmod 777 /usr/bin/testVHACD
 !pip install -r requirements.txt  
 !pip install -U imgaug  
 %cd generate_synimg/scripts/  
