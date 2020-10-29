@@ -1,0 +1,8 @@
+numpy
+matplotlib
+lxml
+trimesh
+pyrender
+pybullet
+imgaug
+opencv-python
